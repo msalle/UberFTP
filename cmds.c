@@ -3358,7 +3358,9 @@ _c_xfer_file(ch_t * sch,
 	errcode_t ecl = EC_SUCCESS;
 	cmdret_t  cr  = CMD_SUCCESS;
 	size_t          hashlen = 0;
+#if 0
 	int             delfile = 0;
+#endif
 	int             hashnl  = 0;
 	int             staged  = 0;
 	int             retry   = s_retry();
@@ -3450,8 +3452,10 @@ _c_xfer_file(ch_t * sch,
 			goto cleanup;
 		}
 
+#if 0
 		if (soff == (globus_off_t)-1)
 			delfile = 1;
+#endif
 
 		ec = l_retrvfile(sch->lh, dch->lh, src, soff, slen);
 
@@ -3549,6 +3553,7 @@ cleanup:
 	ec_print(ecr);
 	ec_destroy(ecr);
 
+#if 0
 	/* Remove the destination on error. */
 	if (cr != CMD_SUCCESS && delfile)
 	{
@@ -3572,6 +3577,7 @@ cleanup:
 		ec_destroy(ec);
 		ml_delete(dmlp);
 	}
+#endif
 
 	if (cr == CMD_SUCCESS)
 	{
