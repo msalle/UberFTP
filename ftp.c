@@ -2742,6 +2742,14 @@ _f_get_resp(fh_t * fh, int * code, char ** resp)
 		FREE(cptr);
 	}
 
+	/* There was no command sent and the server side closed the socket. */
+	if (!nl && fh->cc.eof)
+	{
+		ec = ec_create(EC_GSI_SUCCESS,
+		               EC_GSI_SUCCESS,
+		               "Server unexpectedly closed the socket.");
+	}
+
 	if (!ec && *code == 421)
 	{
 		ec = ec_create(EC_GSI_SUCCESS,
