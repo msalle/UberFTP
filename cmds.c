@@ -3358,7 +3358,6 @@ _c_xfer_file(ch_t * sch,
 	errcode_t ecl = EC_SUCCESS;
 	cmdret_t  cr  = CMD_SUCCESS;
 	size_t          hashlen = 0;
-	int             delfile = 0;
 	int             hashnl  = 0;
 	int             staged  = 0;
 	int             retry   = s_retry();
@@ -3449,9 +3448,6 @@ _c_xfer_file(ch_t * sch,
 			          dst);
 			goto cleanup;
 		}
-
-		if (soff == (globus_off_t)-1)
-			delfile = 1;
 
 		ec = l_retrvfile(sch->lh, dch->lh, src, soff, slen);
 
@@ -3548,30 +3544,6 @@ cleanup:
 		          dst);
 	ec_print(ecr);
 	ec_destroy(ecr);
-
-	/* Remove the destination on error. */
-	if (cr != CMD_SUCCESS && delfile)
-	{
-		/* Stat the file. */
-		ec = l_stat(dch->lh, dst, &dmlp);
-
-		/* If we successfully stat'ed the file... */
-		if (!ec && dmlp)
-		{
-			/* If it is not a character or block device... */
-			if (!(S_ISCHR(dmlp->type) || S_ISBLK(dmlp->type)))
-				ec = l_rm(dch->lh, dst);
-		}
-
-		if (ec)
-			o_fprintf(stderr,
-			          DEBUG_ERRS_ONLY,
-			          "Failed to remove the destination file.\n");
-
-		ec_print(ec);
-		ec_destroy(ec);
-		ml_delete(dmlp);
-	}
 
 	if (cr == CMD_SUCCESS)
 	{
