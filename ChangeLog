@@ -2,6 +2,8 @@ Version 2.9 (Pre Release)
 	- Build fixed for 32bit
 	- Added IPv6 support provided by Francesco Prelz of INFN Milan
 	- Fixed recursive listings
+	- No longer try to delete file on error: might unexpectedly delete
+	  existing file when overwrite protection is on.
 
 Version 2.8 2/10/14
 	- Fixed SPOR response during striped third party transfers. SPOR will

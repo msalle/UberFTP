@@ -1,0 +1,7 @@
+Version 2.9
+-----------
+First gridcf.org release
+Bugfixes:
+- when the server was configured to prevent overwriting existing files, uberftp
+  would delete this existing remote file instead of returning an error.
+
