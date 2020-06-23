@@ -52,3 +52,8 @@ uberftp_SOURCES=$(Sources)
 bin_PROGRAMS=uberftp
 man_MANS=uberftp.1
 
+EXTRA_DIST = \
+    README.md \
+    $(man_MANS) \
+    mssftp.1 \
+    Changelog.mssftp

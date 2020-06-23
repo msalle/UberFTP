@@ -42,8 +42,12 @@ dnl
 dnl Process this file with autoconf to produce a configure script.
 # First [] is used as the prompt
 # Last [] is used for the version information
-AC_INIT(UberFTP (2.8), [2.8], [Jason Alt <jalt@ncsa.illinois.edu>],[uberftp-client])
+AC_INIT(UberFTP (2.9), [2.9], [Grid Community Forum <discuss@gridcf.org>],[uberftp-client])
 AM_INIT_AUTOMAKE 
+
+# Check for C compiler and pre-processor
+AC_PROG_CC
+AC_PROG_CPP
 
 # Check for an MSSFTP build
 AC_ARG_ENABLE(mssftp,
@@ -109,41 +113,41 @@ AC_ARG_WITH(globus,
 
 if test "x$globus_location" == "x/usr" ; then
 	# RPM installation
-	CPPFLAGS=-I$globus_location/lib64/globus/include
+	CPPFLAGS=-I$globus_location/include/globus
 	AC_CHECK_HEADERS([globus_config.h],
 	                 [GLOBUS_CONFIG_CPPFLAGS="$CPPFLAGS"], 
-	                 [AC_MSG_ERROR(globus_config.h not found, install globus-core)])
+	                 [AC_MSG_ERROR([globus_config.h not found, install globus-core])])
 else
 	# Source installation
-	CPPFLAGS=-I$globus_location/include/globus/gcc64dbg
+	CPPFLAGS=-I$globus_location/include
 	AC_CHECK_HEADERS([globus_config.h],
 	                 [GLOBUS_CONFIG_CPPFLAGS="$CPPFLAGS"], 
-	                 [AC_MSG_ERROR(globus_config.h not found in $globus_location)])
+	                 [AC_MSG_ERROR([globus_config.h not found in $globus_location])])
 fi
 
 #
 # Now check for globus_common.h using globus_config.h's location
 #
-CPPFLAGS="-I/$globus_location/include/globus $GLOBUS_CONFIG_CPPFLAGS"
+CPPFLAGS="-I$globus_location/include $GLOBUS_CONFIG_CPPFLAGS"
 AC_CHECK_HEADERS([globus_common.h], 
-                 [GLOBUS_COMMON_CPPFLAGS="-I/$globus_location/include/globus"], 
-                 [AC_MSG_ERROR(globus_common.h not found)])
+                 [GLOBUS_COMMON_CPPFLAGS="-I$globus_location/include/globus"], 
+                 [AC_MSG_ERROR([globus_common.h not found])])
 
 CPPFLAGS="$GLOBUS_CONFIG_CPPFLAGS $GLOBUS_COMMON_CPPFLAGS"
 
 #
 # Find the needed Globus libraries
 #
-LDFLAGS="-L$globus_location/lib64/"
+LDFLAGS="-L$globus_location/lib64/ -L$globus_location/lib/"
 AC_CHECK_LIB([globus_common],
              [globus_module_activate], 
              [], 
-             [AC_MSG_ERROR(libglobus_common.so not found)])
+             [AC_MSG_ERROR([libglobus_common.so not found])])
 
 AC_CHECK_LIB([globus_gssapi_gsi], 
              [gss_wrap], 
              [], 
-             [AC_MSG_ERROR(libglobus_gssapi_gsi.so not found)])
+             [AC_MSG_ERROR([libglobus_gssapi_gsi.so not found])])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile])
