@@ -98,56 +98,49 @@ AC_DEFINE_UNQUOTED(DEFAULT_BLKSIZE, $default_blksize, [ Setting the default buff
 AC_CHECK_FUNCS(strtoll)
 
 #
-AC_CHECK_SIZEOF([size_t])
-
-if test "$ac_cv_sizeof_size_t" = 4; then
-	FLAVOR=32
-else
-	FLAVOR=64
-fi
-
-#
 # Globus Setup
 #
 
 AC_ARG_WITH(globus,
 	[  --with-globus=value     location of Globus installation, defaults to /usr],
 	[  globus_location="$withval" ],
-	[  globus_location="/usr" ]
+	[  globus_location="GLOBUS_DEFAULT_LOCATION" ]
 )
 
 #
 # globus_common.h depends on globus_config.h, so do it first
 #
 
-if test "x$globus_location" == "x/usr" ; then
-	# RPM installation
-	CPPFLAGS=-I$globus_location/include/globus
-	AC_CHECK_HEADERS([globus_config.h],
-	                 [GLOBUS_CONFIG_CPPFLAGS="$CPPFLAGS"], 
-	                 [AC_MSG_ERROR([globus_config.h not found, install globus-core])])
+if test "x$globus_location" == "xGLOBUS_DEFAULT_LOCATION" ; then
+	# Using defaults, check pkg-config first
+	PKG_CHECK_MODULES([GLOBUS_COMMON], [globus-common], have_globus_common=yes, have_globus_common=no)
+	if test "x$have_globus_common" == "xyes" ;then
+		# We're using pkg-config, check also for other modules
+		PKG_CHECK_MODULES([GLOBUS_GSSAPI_GSI], [globus-gssapi-gsi],
+				  [],
+				  [AC_MSG_ERROR([missing globus-gssapi-gsi])])
+		CPPFLAGS="$GLOBUS_COMMON_CFLAGS $GLOBUS_GSSAPI_GSI_CFLAGS $CPPFLAGS"
+		LDFLAGS="$GLOBUS_COMMON_LIBS $GLOBUS_GSSAPI_GSI_LIBS $LDFLAGS"
+	else
+		# Manually check installation in default (RPM) location
+		CPPFLAGS="$CPPFLAGS -I/usr/include/globus"
+		AC_CHECK_HEADERS([globus_config.h globus_common.h],
+				 [], 
+				 [AC_MSG_ERROR([globus header files not found, install globus-common])])
+		LDFLAGS="$LDFLAGS -L/usr/lib64/ -L/usr/lib"
+	fi
 else
-	# Source installation
-	CPPFLAGS=-I$globus_location/include
-	AC_CHECK_HEADERS([globus_config.h],
-	                 [GLOBUS_CONFIG_CPPFLAGS="$CPPFLAGS"], 
-	                 [AC_MSG_ERROR([globus_config.h not found in $globus_location])])
+	# Installation using specified location
+	CPPFLAGS="-I$globus_location/include $CPPFLAGS"
+	AC_CHECK_HEADERS([globus_config.h globus_common.h],
+	                 [], 
+	                 [AC_MSG_ERROR([globus header files not found in $globus_location])])
+	LDFLAGS="-L$globus_location/lib64/ -L$globus_location/lib/ $LDFLAGS"
 fi
-
-#
-# Now check for globus_common.h using globus_config.h's location
-#
-CPPFLAGS="-I$globus_location/include $GLOBUS_CONFIG_CPPFLAGS"
-AC_CHECK_HEADERS([globus_common.h], 
-                 [GLOBUS_COMMON_CPPFLAGS="-I$globus_location/include/globus"], 
-                 [AC_MSG_ERROR([globus_common.h not found])])
-
-CPPFLAGS="$GLOBUS_CONFIG_CPPFLAGS $GLOBUS_COMMON_CPPFLAGS"
 
 #
 # Find the needed Globus libraries
 #
-LDFLAGS="-L$globus_location/lib64/ -L$globus_location/lib/"
 AC_CHECK_LIB([globus_common],
              [globus_module_activate], 
              [], 
