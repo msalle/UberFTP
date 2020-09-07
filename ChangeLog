@@ -2,6 +2,9 @@ Version 2.9 (Pre Release)
 	- Build fixed for 32bit
 	- Added IPv6 support provided by Francesco Prelz of INFN Milan
 	- Fixed recursive listings
+	- No longer try to delete file on error: Prior to this version UberFTP
+	  might have unexpectedly deleted an existing file when overwrite
+	  protection of the GridFTP server (dCache) was on.
 
 Version 2.8 2/10/14
 	- Fixed SPOR response during striped third party transfers. SPOR will
